@@ -11,15 +11,14 @@ router.get("/", (req, res) => {
 
 //记账本的列表
 router.get("/account", checkLoginMiddleware, function (req, res, next) {
-	let accounts = AccountModel.find()
+	AccountModel.find({ username: req.username })
 		.sort({ time: -1 })
 		.exec((err, data) => {
 			if (err) {
 				console.log("读取失败");
 				return;
 			} else {
-				console.log(accounts);
-
+				console.log(data);
 				res.render("list", { accounts: data, moment });
 			}
 		});
@@ -36,6 +35,7 @@ router.post("/account", checkLoginMiddleware, (req, res) => {
 		{
 			...req.body,
 			time: moment(req.body.time).toDate(),
+			username: req.username,
 		},
 		(err, data) => {
 			if (err) {
@@ -54,7 +54,7 @@ router.post("/account", checkLoginMiddleware, (req, res) => {
 //删除记录
 router.get("/account/:id", checkLoginMiddleware, (req, res) => {
 	let id = req.params.id;
-	AccountModel.deleteOne({ _id: id }, (err, data) => {
+	AccountModel.deleteOne({ _id: id, username: req.username }, (err, data) => {
 		if (err) {
 			console.log("删除失败");
 			res.status(500).send("删除失败");
